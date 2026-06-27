@@ -1,0 +1,339 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{parskip}
+\usepackage{titlesec}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    urlcolor=blue,
+    pdftitle={MED-Estation Detailed Project Report},
+    pdfauthor={Team MED-Estation}
+}
+
+\onehalfspacing
+\setcounter{tocdepth}{3}
+
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{0.5em}{}
+\titleformat{\subsubsection}{\normalsize\itshape}{\thesubsubsection}{0.5em}{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1.2cm}
+    {\Huge \textbf{MED-Estation}}\\[0.3cm]
+    {\Large AI-Powered Pharmacy Inventory Intelligence Platform}\\[1.0cm]
+    {\Large \textbf{Comprehensive Additional Learning Report}}\\[0.8cm]
+    {\large Submitted by}\\[0.2cm]
+    {\large Pratik Kumar - 24BML0027}\\[0.15cm]
+    {\large Thakur Chand Choudhary - 24BML0012}\\[0.2cm]
+    {\large Vellore Institute of Technology}\\[0.8cm]
+    \includegraphics[width=0.78\textwidth]{Image/Dashboard.png}\\[0.8cm]
+    {\large Date: 08 April 2026}
+    \vfill
+\end{titlepage}
+
+\pagenumbering{roman}
+\tableofcontents
+\listoffigures
+\clearpage
+\pagenumbering{arabic}
+
+\section{Executive Summary}
+MED-Estation is an integrated healthcare technology system developed to address pharmacy inventory complexity using AI-assisted intelligence and operational automation principles. The project focuses on solving core pharmacy pain points that commonly appear together in real environments: counterfeit medicine risk, inaccurate stock planning, expiry-related wastage, delayed supplier response, and fragmented data visibility across clinical and inventory workflows. Instead of building separate point solutions, MED-Estation was designed as one continuous operational platform in which stock updates, prescription activity, demand analysis, and compliance-oriented records interact in a coordinated decision loop. This approach allows the system to provide not only tracking but also forward-looking recommendations and risk-aware actions.
+
+The platform combines a modular FastAPI backend, asynchronous data persistence, event-driven worker processes, forecasting services, and a modern web interface for practical day-to-day usage. By organizing capabilities into routers, models, schemas, and services, the implementation remains extensible while supporting rapid execution needed for prototype and hackathon timelines. From a product perspective, the system offers an operational narrative that starts with data intake and ends with actionable intervention, including reorder suggestions, expiry alerts, and authenticity validation. This report documents the architecture, implementation rationale, functional modules, intelligence workflows, and impact outcomes in a continuous report format intended for academic and technical review.
+
+\section{Project Context and Problem Landscape}
+\subsection{Why This Problem Matters}
+Medicine availability and authenticity are foundational to safe healthcare delivery. Pharmacies act as critical last-mile nodes, but many still use disconnected systems where inventory counts, supplier records, prescription trends, and verification workflows are maintained in silos. This separation leads to delayed insights, avoidable expiry losses, and risky dispensing decisions when stock provenance is unclear. A common operational pattern is that one high-demand medicine runs out unexpectedly while low-demand stock expires unused. Simultaneously, teams struggle to forecast needs accurately because clinical and sales signals are not transformed into dynamic planning intelligence.
+
+In this context, technology should do more than record transactions. It should help pharmacists and operators identify future risk, prioritize intervention, and maintain trust in medicine quality. MED-Estation is built around this principle by converting historical and real-time operational data into decision-ready outputs. The system treats inventory reliability, counterfeit prevention, and forecasting as interconnected domains rather than independent dashboards.
+
+\subsection{Core Design Intent}
+The design intent behind MED-Estation is to build an intelligence-centric pharmacy operating layer where every major action can trigger useful system responses. If stock is updated, FEFO status and risk indicators should reflect the change. If prescriptions increase for a category, forecast and reorder guidance should adapt. If batch details look suspicious, authenticity checks should be available in the same environment. If near-expiry inventory exceeds local consumption potential, exchange proposals should help prevent waste. This integrated philosophy is central to the project and explains many architectural choices made during implementation.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/inventory matrix.png}
+    \caption{Inventory matrix module aligned with operational stock intelligence goals.}
+\end{figure}
+
+\section{System Architecture Overview}
+\subsection{Backend Architecture}
+The backend is implemented using FastAPI and structured around domain routers that map to practical pharmacy operations such as inventory, prescriptions, reports, uploads, security checks, exchange proposals, patients, insurance, and search functionality. Asynchronous SQLAlchemy supports non-blocking persistence behavior, while schema definitions provide explicit validation boundaries between API inputs and internal processing. The architecture follows a clean modular decomposition where routers expose contracts, services implement domain logic, and workers handle post-event recalculations.
+
+Application startup initializes database metadata, wires all API domains under versioned paths, and activates background event handlers. This ensures the system is ready for both direct requests and asynchronous intelligence updates at runtime. The backend is optimized for demonstrable performance in local environments while preserving migration paths to production infrastructure.
+
+\subsection{Data Persistence and Configurability}
+Development execution uses SQLite for speed and simplicity, allowing rapid setup without heavy dependencies. At the same time, repository structure and deployment assets indicate readiness for PostgreSQL-based operation for higher scale scenarios. Configuration is environment-driven, enabling controlled variation across local development, demo sessions, and future deployment targets. This combination of immediate portability and forward compatibility was essential to deliver both hackathon execution and long-term viability.
+
+\subsection{Event-Driven Internal Processing}
+A significant architecture strength is event-driven internal behavior. Instead of forcing all recomputation inside synchronous request flows, MED-Estation emits domain events such as stock updates, prescription additions, and dataset upload completion. Worker services consume these events to run FEFO refreshes, reorder recalculations, and related processing in the background. This pattern reduces user-perceived latency while keeping analytics and alerts updated.
+
+\section{Module-by-Module Functional Report}
+\subsection{Inventory and Batch Management}
+Inventory management in MED-Estation operates at batch granularity rather than aggregate stock values. This is a critical decision because expiry handling, authenticity checks, and usage prioritization all depend on batch-specific metadata. Stock batches track key fields including quantity, manufacture date, expiry date, and operational status. The system uses FEFO logic to surface which batches should be consumed earlier to minimize waste while maintaining dispensing safety.
+
+Batch-centric modeling also improves auditability. Changes in stock can be linked to specific entities and event timelines instead of becoming ambiguous aggregate deltas. This precision is useful for both operational review and compliance-oriented tracing.
+
+\subsection{Prescription and Clinical Signal Integration}
+Prescription workflows are integrated to ensure demand intelligence reflects actual medicine usage patterns instead of static assumptions. The system supports prescription entry paths, including simulated OCR-like behavior in prototype context, and links outputs to transactional signals that influence reporting and forecasting. Clinical data structures such as patient and doctor entities are modeled to provide a richer context for downstream analysis and future extension paths.
+
+\subsection{Reporting and Dashboard Intelligence}
+Reporting modules aggregate operational metrics into actionable insights for decision-makers. The dashboard layer surfaces inventory health indicators, trend patterns, waste-sensitive areas, and recommendation outputs from forecasting services. Rather than presenting only historical numbers, the reports are designed to support next-step decision making such as procurement planning and risk prioritization.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/Dashboard.png}
+    \caption{Unified dashboard view connecting stock status, trends, and decision cues.}
+\end{figure}
+
+\subsection{Dataset Upload and Bulk Initialization}
+The platform includes upload capabilities for CSV and spreadsheet datasets, enabling quick onboarding and large-scale initialization without manual entry of every item. Bulk ingest is especially valuable in real pharmacy contexts where data often originates from existing ERP exports or distributor sheets. Upload completion can trigger recalculation workflows so that imported data is rapidly transformed into usable intelligence.
+
+\subsection{Global Search and Operational Discoverability}
+Search endpoints provide cross-domain discoverability across entities such as drugs, suppliers, patients, and batches. In operational systems, discoverability is often as important as raw model quality because delayed retrieval can reduce practical value. Search capabilities ensure users can quickly locate relevant records and act without navigating deeply nested workflows.
+
+\section{Artificial Intelligence and Decision Support Stack}
+\subsection{Demand Forecasting Engine}
+Demand forecasting services transform historical sales and refill-like signals into forward demand estimates across selectable horizons. This helps pharmacies avoid purely reactive procurement behavior and supports anticipatory planning. Forecasting outputs are not intended to replace human judgment; they are structured as decision-support artifacts that can be reviewed alongside current stock and operational context.
+
+Forecasting is especially important where demand volatility is high and fixed reorder thresholds fail. Seasonal variation, local clinic dynamics, and disease-specific spikes can all distort static plans. MED-Estation addresses this by providing model-driven projections integrated into the reporting layer.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/AI demand forecast.png}
+    \caption{AI forecasting interface for proactive medicine demand planning.}
+\end{figure}
+
+\subsection{Predictive Reorder Recommendation}
+Predictive reorder logic compares expected demand against usable stock and safety buffers to identify procurement needs before critical shortages occur. This model turns forecast outputs into operational recommendations and creates a more structured replenishment process. The recommendation chain can also connect to communication services for supplier follow-up behavior in configured environments.
+
+\subsection{Conversational AI Assistant}
+The chatbot module provides a natural-language interaction layer grounded in live system context. Users can query inventory state, alerts, and planning signals conversationally, reducing friction when rapid insights are needed. This is particularly useful in high-pressure settings where users may not have time to navigate multiple interfaces. The assistant design prioritizes contextual relevance over generic response style.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.475\textwidth]{Image/chatbot.png}
+    \caption{Conversational AI assistant interface for real-time pharmacy decision support.}
+\end{figure}
+
+\section{Safety, Trust, and Compliance-Oriented Features}
+\subsection{Counterfeit Medicine Detection}
+Counterfeit prevention is implemented through a dedicated security workflow that checks batch-level authenticity against verified references and local records. Positioning this as a core module rather than an add-on highlights the project’s healthcare safety orientation. Even in prototype mode, this design encourages trust-centric decision pathways and creates a foundation for future regulatory-grade verification integrations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/fame med detection.png}
+    \caption{Counterfeit medicine detection module for authenticity assurance.}
+\end{figure}
+
+\subsection{Immutable Audit Trail Strategy}
+The system includes a hash-linked audit ledger model for selected critical actions. This provides tamper-evident progression of records and improves accountability in operational review scenarios. In healthcare workflows, where post-incident tracing may be necessary, audit integrity is a significant design advantage. The current implementation can be extended with stronger signature and governance policies in production phases.
+
+\subsection{Alerting and Operational Risk Visibility}
+Alert entities and related endpoints provide visibility into unresolved risk states. Combined with FEFO classification and reporting layers, this creates a practical risk radar for pharmacy teams. Alerts help move the system from passive storage toward active monitoring and intervention support.
+
+\section{Expiry Intelligence and Exchange Network Workflow}
+\subsection{FEFO as an Operational Control Layer}
+FEFO logic is continuously applied to classify batch risk and prioritize usage paths. Rather than static one-time labeling, status is recomputed as date windows move, ensuring risk visibility remains current. This dynamic classification reduces the chance of silent expiry accumulation and supports timely action planning.
+
+\subsection{Near-Expiry Redistribution Model}
+The exchange network capability introduces structured proposal-driven redistribution of near-expiry medicines. This approach targets a common inefficiency where one site experiences surplus nearing expiry while another site has unmet demand for the same medicine. By formalizing exchange proposals, the system creates traceable workflows that can reduce waste and improve network-level availability.
+
+This capability demonstrates how MED-Estation extends beyond single-pharmacy management into ecosystem optimization. It also aligns with sustainability goals by reducing avoidable pharmaceutical disposal.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/expiry exchange network.png}
+    \caption{Expiry exchange network interface for near-expiry redistribution.}
+\end{figure}
+
+\section{Frontend Experience and Product Usability}
+\subsection{Interface Composition and Workflow Clarity}
+The frontend is built with Next.js, React, and TypeScript to deliver modular pages aligned with backend domains. Interface modules include dashboard views, inventory matrix screens, forecasting displays, chatbot interactions, counterfeit checks, supplier and procurement views, and patient-insurance linked pages. This breadth supports full demonstration of the platform’s integrated workflow narrative.
+
+\subsection{Why Usability Matters in Technical Projects}
+Technical intelligence creates operational value only when users can act on it quickly. MED-Estation prioritizes practical visual cues and interpretable outputs so users can move from observation to action without excessive cognitive overhead. This usability orientation was a key reason the system performed well in evaluation settings; reviewers could understand not only the logic but also the operational path.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/login page.png}
+    \caption{Login interface for secure entry into the platform.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/Billing and pos.png}
+    \caption{Billing and point-of-sale module integrated with inventory records.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/supplier and procurement.png}
+    \caption{Supplier and procurement interface for reorder execution workflows.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/patients and insurance.png}
+    \caption{Patient and insurance module connected to pharmacy operations.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{Image/workscpace.png}
+    \caption{Workspace overview showing unified product navigation and modules.}
+\end{figure}
+
+\section{Engineering Quality, Deployment Readiness, and Extensibility}
+\subsection{Codebase Structure and Maintainability}
+The implementation follows maintainable separation of concerns through domain routers, schema models, service layers, worker modules, and shared configuration patterns. This structure supports safe iteration, targeted testing, and controlled feature expansion. Because functional responsibilities are explicit, the project can grow without forcing monolithic rewrites.
+
+\subsection{Deployment and Environment Strategy}
+Run scripts and environment-aware configuration support quick local setup and reproducible demo sessions. SQLite-first operation simplifies immediate adoption, while container and service structure indicate readiness for stronger deployment topologies. Communication integrations are built with mock-capable behavior, which is useful when external API credentials are unavailable during testing or evaluation.
+
+\subsection{Future Scaling Direction}
+The system is positioned for future scale through potential migration to external message brokers, distributed workers, stronger role-based authorization, expanded observability, and advanced model management pipelines. Importantly, current architecture does not block these enhancements. Instead, it establishes a practical baseline from which production hardening can proceed incrementally.
+
+\section{Implementation Methodology and Development Process}
+\subsection{Rapid Prototyping Approach}
+MED-Estation was developed using a rapid prototyping methodology suitable for high-intensity innovation environments. The team first identified high-risk operational gaps in pharmacy workflows and then translated each gap into a clearly scoped technical module. Instead of beginning with isolated model experimentation, development prioritized end-to-end workflow continuity so that every feature could be demonstrated in realistic usage sequences. This process reduced integration risk and ensured that module-level progress translated into system-level value.
+
+The implementation strategy followed iterative integration cycles. In each cycle, one core workflow such as inventory update, prescription input, or data upload was connected to downstream outputs including alerts, forecasts, and report views. This avoided the common pitfall where subsystems remain technically complete but operationally disconnected. As a result, each incremental build contributed directly to demonstrable capabilities.
+
+\subsection{Design-to-Implementation Mapping}
+The team mapped conceptual objectives to technical artifacts in a structured way. Inventory transparency goals became batch-level models and FEFO status services. Procurement intelligence goals became forecasting and reorder service components. Trust and safety goals became counterfeit validation and audit-linked data pathways. User accessibility goals became dashboard modules and conversational query interfaces. This mapping ensured traceability between stakeholder requirements and actual code structure.
+
+From a software engineering standpoint, this method strengthened maintainability because modules were created around stable domain concerns rather than temporary coding convenience. Even under hackathon constraints, the project retained architectural discipline by preserving clear boundaries between API contracts, business logic, persistence entities, and asynchronous workers.
+
+\section{Detailed Data Flow and Operational Lifecycle}
+\subsection{Data Intake to Decision Loop}
+The operational lifecycle begins with data intake through inventory endpoints or bulk upload workflows. Incoming records are validated, normalized, and persisted to entity tables. As soon as this state changes, events are emitted and background tasks begin recomputation of FEFO classifications, risk alerts, and recommendation layers. In parallel, user-facing reports can fetch refreshed summaries from reporting endpoints. This creates a near-continuous loop where capture, processing, and output remain tightly connected.
+
+The system’s design intentionally avoids one-way pipelines where data is stored without generating immediate value. Instead, each intake path is expected to trigger at least one intelligence output. This principle is what transforms MED-Estation from an inventory database into an operational intelligence platform.
+
+\subsection{Prescription-Linked Demand Feedback}
+Prescription events influence consumption signals that feed forecasting and planning workflows. As prescription-linked movement patterns accumulate, the forecasting engine receives richer temporal signals for horizon estimation. Recommendation logic then compares projected demand against current usable stock and safety thresholds. This closed-loop linkage between clinical interaction and inventory planning is critical for realistic pharmacy automation.
+
+Because prescription behavior can shift quickly in response to local disease patterns, this feedback path supports adaptability. Over time, it can be enhanced with medicine-class segmentation, confidence intervals, and event-triggered anomaly handling for unusual demand surges.
+
+\subsection{Risk Escalation and Response Pathways}
+Risk states in MED-Estation can arise from low-stock prediction, near-expiry concentration, or authenticity concerns. Once identified, these states are represented in alert structures and surfaced through dashboard or API channels. Operational teams can then evaluate response options such as reorder initiation, redistribution proposal, or deeper verification checks. This escalation design helps convert passive warnings into actionable response pathways.
+
+\section{Testing Perspective and Quality Validation}
+\subsection{Functional Validation}
+Functional validation focused on verifying complete user journeys rather than isolated endpoint behavior. Core scenarios included adding inventory, ingesting batch datasets, running FEFO recalculation, generating forecast-informed reorder suggestions, querying through chatbot interface, and validating suspicious batch records through security modules. This scenario-driven validation approach ensured that integration assumptions were tested in realistic operational sequence.
+
+\subsection{Data Integrity and Edge Case Handling}
+Attention was given to edge conditions such as incomplete records, date inconsistencies, unusual quantity states, and near-boundary expiry windows. Schema validation and service-level checks helped prevent malformed flows from silently corrupting downstream analytics. While prototype systems can tolerate limited constraints, MED-Estation demonstrates deliberate protection of data integrity in key decision pathways.
+
+\subsection{Demonstration Reliability}
+For evaluation contexts, reliability means predictable behavior under time pressure. Environment-based configuration, mock-capable communication services, and controlled startup scripts improved demonstration stability. This reduced dependence on external third-party services during live sessions while preserving architecture paths for real integrations.
+
+\section{Performance and Scalability Considerations}
+\subsection{Current Performance Profile}
+The present implementation is optimized for prototype-to-pilot scale where low operational friction and modular correctness are prioritized. Asynchronous request handling improves responsiveness under concurrent access. Background worker decomposition prevents heavy analytical recomputation from blocking interactive requests. This combination supports a smooth experience for development, testing, and demonstration scenarios.
+
+\subsection{Scalability Transition Path}
+As usage grows, the architecture can transition to external broker infrastructure and distributed worker execution for improved throughput and resilience. Database migration from local lightweight persistence to managed relational infrastructure is already aligned with current model design. Because APIs and services are modular, scaling can proceed by replacing infrastructure components without rewriting business logic.
+
+\subsection{Observability and Operations}
+Future production readiness can be strengthened through structured monitoring, performance tracing, and operational dashboards for service health. These enhancements will improve fault isolation, capacity planning, and reliability governance. The current system layout is compatible with such additions due to explicit service boundaries and eventized processing.
+
+\section{Risk Analysis and Mitigation Strategy}
+\subsection{Technical Risks}
+Key technical risks include forecasting error under sparse data, dependency on data quality for recommendation validity, and potential queue contention under heavy event bursts. Mitigation strategies involve progressive model tuning, stronger data validation gates, and staged infrastructure scaling. The platform already includes foundational controls that reduce immediate risk severity in prototype operation.
+
+\subsection{Operational Risks}
+Operational risks include late adoption due to workflow change resistance, over-reliance on automated suggestions, and inconsistent update discipline by users. Mitigation requires training-oriented onboarding, explainable recommendation views, and role-appropriate interface guidance. MED-Estation’s current emphasis on interpretable dashboards and explicit workflow modules supports these mitigations.
+
+\subsection{Governance Risks}
+Governance risks include insufficient access control in early-stage deployments and unclear policy ownership for inter-pharmacy exchange decisions. Mitigation pathways include role-based authorization layers, policy-driven approval workflows, and stronger audit review practices. The current audit ledger and structured proposal entities provide a good baseline for this governance evolution.
+
+\section{Societal and Healthcare Impact Discussion}
+\subsection{Patient-Centric Impact}
+The most direct impact of MED-Estation is improved continuity of medicine availability and reduced probability of unsafe or delayed dispensing decisions. By improving forecasting and stock visibility, the platform helps avoid essential drug unavailability at critical moments. By integrating trust checks, it supports safer medicine assurance for patients and providers.
+
+\subsection{Economic and Sustainability Impact}
+Expiry reduction and better procurement timing can significantly reduce operational waste and financial leakage in pharmacy systems. Redistribution workflows extend usable stock life across network nodes, reducing avoidable disposal. These outcomes create combined economic and sustainability gains, especially in environments where medicine cost and supply volatility are major constraints.
+
+\subsection{Institutional Impact}
+For hospitals, retail chains, and independent pharmacy groups, the project offers a framework for data-driven operations without demanding immediate enterprise-scale infrastructure. Institutions can adopt core modules incrementally and expand capability as data maturity and operational readiness improve.
+
+\section{Roadmap and Strategic Extension Plan}
+\subsection{Short-Term Enhancements}
+Near-term roadmap goals include improved forecasting explainability, richer supplier scoring logic, configurable alert severity tiers, and deeper audit event coverage. User-level role personalization and workflow-guided action prompts can further increase practical usability.
+
+\subsection{Medium-Term Enhancements}
+Medium-term priorities include distributed processing, stricter authentication and authorization layers, API rate governance, and stronger deployment automation. Exchange-network capabilities can be expanded with approval routing, partner trust metrics, and transfer lifecycle tracking.
+
+\subsection{Long-Term Vision}
+Long-term vision includes regional inventory federation, multi-node demand balancing, policy-aware autonomous interventions, and privacy-preserving cross-institution analytics. The project’s modular foundations make this progression technically feasible while preserving continuity with current workflows.
+
+\section{Outcome Assessment and Practical Impact}
+\subsection{Operational Value Delivered}
+MED-Estation delivers value through integrated visibility, anticipatory planning, and risk-aware intervention support. It reduces dependency on manual intuition for critical decisions such as replenishment timing, expiry handling, and source trust evaluation. By integrating these concerns, the platform helps pharmacies improve continuity of care while reducing waste and uncertainty.
+
+\subsection{Why the Project Stood Out}
+The project’s distinctiveness comes from combining technical breadth with coherent system behavior. Many prototypes demonstrate isolated AI features; MED-Estation demonstrates connected operational intelligence where modules reinforce each other. This integration is central to real-world usefulness and was a major factor in recognition outcomes.
+
+\clearpage
+\section{Appendix: Hackathon Build Narrative and Recognition}
+\subsection{Event Overview}
+MED-Estation was built and demonstrated in the context of \textbf{AxioML Hackathon 2026}, organized by \textbf{Pratyusha Engineering College} in \textbf{Tiruvallur, Tamil Nadu, India}, on \textbf{3rd March to 4th March 2026}. The event was a two-day external inter-college innovation challenge focused on practical solutions using AI, machine learning, and modern software systems. Participation scale included more than fifty external teams and approximately thirty internal teams from the host institution. Our team participated as an external team representing \textbf{Vellore Institute of Technology}.
+
+\subsection{Achievement and Significance}
+In the final evaluation round, MED-Estation was assessed for innovation, feasibility, technical implementation, healthcare relevance, and presentation quality. The project received strong appreciation for unifying counterfeit drug detection, smart inventory forecasting, expiry-sensitive redistribution strategy, and autonomous decision support in one platform. Following technical demonstration and final pitch, the project was awarded \textbf{First Prize} with a \textbf{Rs. 10,000 cash award}. This recognition validates the project’s engineering quality and domain relevance under constrained hackathon delivery timelines.
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.30\textwidth} p{0.60\textwidth}}
+\toprule
+\textbf{Category} & \textbf{Details} \\
+\midrule
+Position & 1st Place Winner \\
+Competition & AxioML Hackathon 2026 \\
+Host Institution & Pratyusha Engineering College \\
+Prize Money & Rs. 10,000 Cash Prize \\
+Competition Scale & 50+ External Teams + 30+ Internal Teams \\
+\bottomrule
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{Image/1st prize.png}
+    \caption{First Prize recognition from AxioML Hackathon 2026.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{Image/Cheque prize of 10000.png}
+    \caption{Rs. 10,000 cheque awarded as part of first-prize recognition.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{Image/Pratik Kumar certicifate.png}
+    \caption{Participation and achievement certificate for Pratik Kumar.}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.96\textwidth]{Image/Thakur Choudhary certificate.png}
+    \caption{Participation and achievement certificate for Thakur Chand Choudhary.}
+\end{figure}
+
+\subsection{Closing Statement}
+This project demonstrates that meaningful healthcare innovation can be delivered in constrained timelines when architecture discipline, domain understanding, and practical usability are developed together. MED-Estation is not only a hackathon-winning prototype but also a strong foundation for a scalable pharmacy intelligence platform with real-world impact potential.
+
+\end{document}

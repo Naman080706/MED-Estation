@@ -1,0 +1,151 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary-accent: #2BB673;
+  --color-soft-green-bg: #EAF7F1;
+  --color-page-bg: #F6F8FA;
+  --color-card-surface: #FFFFFF;
+  --color-text-primary: #1E293B;
+  --color-text-muted: #64748B;
+  --color-border-soft: #EEF2F6;
+  --font-jakarta: var(--font-jakarta-sans);
+}
+
+body {
+  background-color: var(--background);
+  font-family: var(--font-jakarta-sans), sans-serif;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 1.25rem;
+  --background: #F6F8FA;
+  --foreground: #1E293B;
+  --card: #FFFFFF;
+  --card-foreground: #1E293B;
+  --popover: #FFFFFF;
+  --popover-foreground: #1E293B;
+  --primary: #2BB673;
+  --primary-foreground: #FFFFFF;
+  --secondary: #EAF7F1;
+  --secondary-foreground: #1E293B;
+  --muted: #F1F5F9;
+  --muted-foreground: #64748B;
+  --accent: #EAF7F1;
+  --accent-foreground: #1E293B;
+  --destructive: #EF4444;
+  --border: #EEF2F6;
+  --input: #EEF2F6;
+  --ring: #2BB673;
+  --chart-1: #2BB673;
+  --chart-2: #10B981;
+  --chart-3: #F59E0B;
+  --chart-4: #3B82F6;
+  --chart-5: #8B5CF6;
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1E293B;
+  --sidebar-primary: #2BB673;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #EAF7F1;
+  --sidebar-accent-foreground: #1E293B;
+  --sidebar-border: #EEF2F6;
+  --sidebar-ring: #2BB673;
+}
+
+.dark {
+  --background: #0F172A;
+  --foreground: #F1F5F9;
+  --color-text-primary: #F9FAFB;
+  --color-text-muted: #9CA3AF;
+  --card: #1E293B;
+  --card-foreground: #F1F5F9;
+  --popover: #1E293B;
+  --popover-foreground: #F1F5F9;
+  --primary: #2BB673;
+  --primary-foreground: #FFFFFF;
+  --secondary: #134E34;
+  --secondary-foreground: #F1F5F9;
+  --muted: #334155;
+  --muted-foreground: #94A3B8;
+  --accent: #134E34;
+  --accent-foreground: #F1F5F9;
+  --destructive: #DC2626;
+  --border: #334155;
+  --input: #334155;
+  --ring: #2BB673;
+  --chart-1: #2BB673;
+  --chart-2: #10B981;
+  --chart-3: #F59E0B;
+  --chart-4: #3B82F6;
+  --chart-5: #8B5CF6;
+  --sidebar: #1E293B;
+  --sidebar-foreground: #F1F5F9;
+  --sidebar-primary: #2BB673;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #134E34;
+  --sidebar-accent-foreground: #F1F5F9;
+  --sidebar-border: #334155;
+  --sidebar-ring: #2BB673;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@keyframes slide-left {
+  0% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
